@@ -1,45 +1,3 @@
-// const passport = require('passport')
-// const LocalStrategy = require('passport-local').Strategy
-// const bcrypt = require('bcryptjs')
-// const db = require('../models')
-// const User = db.User
-
-// module.exports = app => {
-//     app.use(passport.initialize())
-//     app.use(passport.session())
-
-//     passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-//         User.findOne({ where: { email } })
-//             .then(user => {
-//                 if (!user) {
-//                     return done(null, false, { message: 'This email is not registered!' })
-//                 }
-//                 return bcrypt.compare(password, user.password)
-//                     .then(isMatch => {
-//                         if (!isMatch) {
-//                             return done(null, false, { message: 'Email or password incorrect.' })
-//                         }
-//                         return done(null, user)
-//                     })
-//                     .catch(error => done(error, false))
-//             })
-//     }))
-
-//     passport.serializeUser((user, done) => {
-//         done(null, user.id)
-//     })
-
-//     passport.deserializeUser((id, done) => {
-//         User.findByPk(id)
-//             .then(user => {
-//                 user = user.toJSON()
-//                 done(null, user)
-//             })
-//             .catch(error => done(error, null))
-//     })
-// }
-
-
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const bcrypt = require('bcryptjs')
@@ -48,15 +6,19 @@ const User = db.User
 module.exports = app => {
     app.use(passport.initialize())
     app.use(passport.session())
-    passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+    passport.use(new LocalStrategy({ usernameField: 'email', passReqToCallback: true }, (req, email, password, done) => {
         User.findOne({ where: { email } })
             .then(user => {
                 if (!user) {
-                    return done(null, false, { message: 'That email is not registered!' })
+                    req.flash('warning_msg', 'This Email has not been registered.')
+                    return done(null, false)
+                    // return done(null, false, { message: 'That email is not registered!' })
                 }
                 return bcrypt.compare(password, user.password).then(isMatch => {
                     if (!isMatch) {
-                        return done(null, false, { message: 'Email or Password incorrect.' })
+                        req.flash('warning_msg', 'Incorrect Email or Password.')
+                        return done(null, false)
+                        // return done(null, false, { message: 'Email or Password incorrect.' })
                     }
                     return done(null, user)
                 })

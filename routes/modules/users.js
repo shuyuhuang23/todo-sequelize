@@ -23,22 +23,32 @@ router.get('/register', (req, res) => {
 
 router.post('/register', (req, res) => {
     const { name, email, password, confirmPassword } = req.body
+    const errors = []
+
+    if (!name || !email || !password || !confirmPassword) {
+        errors.push({ message: 'All fields are requried.' })
+    }
+    if (password !== confirmPassword) {
+        errors.push({ message: 'Passowrds do not match.' })
+    }
+    if (errors.length) {
+        return res.render('register', {
+            errors,
+            name,
+            email
+        })
+    }
     User.findOne({ where: { email } })
         .then(user => {
             if (user) {
-                console.log('This email has been registered.')
+                errors.push({ 'message': 'This email has been registered' })
                 return res.render('register', {
+                    errors,
                     name,
                     email
                 })
             }
-            if (password !== confirmPassword) {
-                console.log('Passwords do not match.')
-                return res.render('register', {
-                    name,
-                    email
-                })
-            }
+
 
             return bcrypt.genSalt(10)
                 .then(salt => bcrypt.hash(password, salt))
@@ -58,6 +68,7 @@ router.post('/register', (req, res) => {
 
 router.get('/logout', (req, res) => {
     req.logout()
+    req.flash('success_msg', 'Log out successfully.')
     res.redirect('/users/login')
 })
 
