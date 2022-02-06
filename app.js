@@ -1,19 +1,32 @@
 const express = require('express')
 const { engine } = require('express-handlebars')
 const methodOverride = require('method-override')
+const session = require('express-session')
 const bcrypt = require('bcryptjs')
+const passport = require('passport')
 
 const db = require('./models')
 const User = db.User
 const Todo = db.Todo
 
+const usePassport = require('./config/passport')
+
 const app = express()
 const PORT = 3000
+
+
 
 app.engine('hbs', engine({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
+app.use(session({
+    secret: 'ThisIsMySecret',
+    resave: false,
+    saveUninitialized: true
+}))
+
+usePassport(app)
 
 // app.get('/', (req, res) => {
 //     res.send('hello world')
@@ -36,9 +49,10 @@ app.get('/users/login', (req, res) => {
     res.render('login')
 })
 
-app.post('/users/login', (req, res) => {
-    res.send('login')
-})
+app.post('/users/login', passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/users/login'
+}))
 
 app.get('/users/register', (req, res) => {
     res.render('register')
