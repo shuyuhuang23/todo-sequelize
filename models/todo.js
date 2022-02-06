@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+// const { UPSERT } = require('sequelize/dist/lib/query-types');
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
     /**
@@ -11,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Todo.belongsTo(models.User)
     }
   }
   Todo.init({
