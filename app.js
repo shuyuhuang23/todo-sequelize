@@ -3,8 +3,12 @@ const session = require('express-session')
 const { engine } = require('express-handlebars')
 const methodOverride = require('method-override')
 const flash = require('connect-flash')
-const bcrypt = require('bcryptjs')
-const passport = require('passport')
+// const bcrypt = require('bcryptjs')
+// const passport = require('passport')
+
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
 
 const db = require('./models')
 const User = db.User
@@ -14,7 +18,7 @@ const routes = require('./routes')
 const usePassport = require('./config/passport')
 
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT
 
 
 
@@ -23,7 +27,7 @@ app.set('view engine', 'hbs')
 app.use(express.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 app.use(session({
-    secret: 'ThisIsMySecret',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true
 }))
